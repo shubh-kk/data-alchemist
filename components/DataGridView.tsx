@@ -4,6 +4,16 @@ import { DataGrid, Column } from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
 import { ParsedSheet } from './FileUploader';
 import { ValidationError } from '../lib/validators';
+import { useState } from 'react';
+
+// Custom styles for the DataGrid
+const customStyles = {
+  cell: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  }
+};
 
 interface DataGridViewProps {
   data: ParsedSheet;
@@ -12,6 +22,10 @@ interface DataGridViewProps {
 }
 
 export function DataGridView({ data, errors, title }: DataGridViewProps) {
+  const [selectedCell, setSelectedCell] = useState<{content: string; isOpen: boolean}>({
+    content: '',
+    isOpen: false
+  });
   // Create a map of rows with errors for quick lookup
   const errorMap = useMemo(() => {
     const map = new Map<number, Map<string, string[]>>();
@@ -34,6 +48,9 @@ export function DataGridView({ data, errors, title }: DataGridViewProps) {
     return map;
   }, [errors]);
 
+  // Track column widths for resizable columns
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+
   // Generate columns from the first row or default set
   const columns = useMemo<Column<any>[]>(() => {
     if (data.length === 0) return [];
@@ -42,7 +59,8 @@ export function DataGridView({ data, errors, title }: DataGridViewProps) {
     return Object.keys(sample).map(key => ({
       key,
       name: key,
-      width: Math.max(100, key.length * 10),
+      width: columnWidths[key] || Math.max(100, key.length * 10),
+      resizable: true,
       cellClass: (row: any) => {
         const rowIndex = data.indexOf(row) + 1;
         const hasError = errorMap.has(rowIndex) && errorMap.get(rowIndex)!.has(key);
@@ -63,12 +81,20 @@ export function DataGridView({ data, errors, title }: DataGridViewProps) {
           }
         }
         
+        // Determine if content should be truncated in view
+        const isTruncated = typeof cellContent === 'string' && cellContent.length > 100;
+        const displayContent = isTruncated 
+          ? `${cellContent.substring(0, 100)}...` 
+          : cellContent;
+        
         return (
           <div
-            className={`w-full h-full p-2 ${hasError ? 'text-red-700' : ''}`}
-            title={hasError ? errorMap.get(rowIndex)!.get(key)!.join(', ') : undefined}
+            className={`w-full h-full p-2 ${hasError ? 'text-red-700' : ''} overflow-hidden text-ellipsis`}
+            title={hasError 
+              ? errorMap.get(rowIndex)!.get(key)!.join(', ') 
+              : typeof cellContent === 'string' ? cellContent : undefined}
           >
-            {cellContent}
+            {displayContent}
           </div>
         );
       }
@@ -86,7 +112,15 @@ export function DataGridView({ data, errors, title }: DataGridViewProps) {
 
   return (
     <div className="mb-6">
-      <h2 className="text-xl font-semibold mb-2">{title}</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-xl font-semibold">{title}</h2>
+        <span className="text-xs text-gray-500 flex items-center">
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          Tip: Drag column edges to resize
+        </span>
+      </div>
       <div className="border rounded-lg overflow-hidden">
         <DataGrid
           columns={columns}
@@ -94,11 +128,51 @@ export function DataGridView({ data, errors, title }: DataGridViewProps) {
           className="rdg-light"
           style={{ height: 400 }}
           rowHeight={40}
-          onCellClick={(args: any) => {
-            // You can add cell click handling here if needed
+          defaultColumnOptions={{
+            sortable: true,
+            resizable: true
+          }}
+          onColumnResize={(column, width) => {
+            const key = String(column.key);
+            setColumnWidths(prev => ({
+              ...prev,
+              [key]: width
+            }));
+          }}
+          onCellClick={({ row, column }) => {
+            const key = String(column.key);
+            const content = row[key];
+            if (content && typeof content === 'string' && content.length > 100) {
+              setSelectedCell({
+                content: content,
+                isOpen: true
+              });
+            }
           }}
         />
       </div>
+
+      {/* Modal for viewing large cell content */}
+      {selectedCell.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedCell({ content: '', isOpen: false })}>
+          <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[80vh] overflow-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Cell Content</h3>
+              <button 
+                onClick={() => setSelectedCell({ content: '', isOpen: false })}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded border">
+              {selectedCell.content}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
