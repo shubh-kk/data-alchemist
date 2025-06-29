@@ -139,9 +139,12 @@ export function LoadLimitBuilder({
           </div>
           
           <div className="mb-3">
-            <label className="block text-sm font-medium mb-1">
-              Maximum Load Per Phase: {newLimit.maxLoadPerPhase}
-            </label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-sm font-medium">Maximum Load Per Phase</label>
+              <span className="text-blue-600 font-semibold bg-blue-50 px-3 py-1 rounded-full">
+                {newLimit.maxLoadPerPhase} hours
+              </span>
+            </div>
             <input
               type="range"
               min="1"
@@ -154,9 +157,11 @@ export function LoadLimitBuilder({
               })}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-gray-500">
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
               <span>1</span>
+              <span>4</span>
               <span>8</span>
+              <span>12</span>
               <span>16</span>
             </div>
           </div>
@@ -202,7 +207,7 @@ export function LoadLimitBuilder({
                     {workers.find(w => w.WorkerID === limit.workerId)?.WorkerName || limit.workerId}
                   </h4>
                   <div className="mt-1 text-sm text-gray-600">
-                    Max load per phase: <span className="font-medium">{limit.maxLoadPerPhase}</span> hours
+                    Max load per phase: <span className="font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{limit.maxLoadPerPhase} hours</span>
                   </div>
                 </div>
                 <div className="flex gap-2">

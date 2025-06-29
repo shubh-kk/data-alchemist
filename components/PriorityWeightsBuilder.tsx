@@ -48,14 +48,32 @@ export function PriorityWeightsBuilder({
   const getClientWeight = (clientId: string) => {
     return weights.clients[clientId] !== undefined
       ? weights.clients[clientId]
-      : 0.5; // Default weight
+      : 0.1; // Default weight of 0.1
   };
   
   // Get default weight or existing weight for a task
   const getTaskWeight = (taskId: string) => {
     return weights.tasks[taskId] !== undefined
       ? weights.tasks[taskId]
-      : 0.5; // Default weight
+      : 0.1; // Default weight of 0.1
+  };
+  
+  // Reset all client weights to 0.1
+  const handleResetClientWeights = () => {
+    const resetWeights: PriorityWeights = {
+      ...weights,
+      clients: {}
+    };
+    onUpdate(resetWeights);
+  };
+  
+  // Reset all task weights to 0.1
+  const handleResetTaskWeights = () => {
+    const resetWeights: PriorityWeights = {
+      ...weights,
+      tasks: {}
+    };
+    onUpdate(resetWeights);
   };
   
   return (
@@ -63,26 +81,37 @@ export function PriorityWeightsBuilder({
       <h3 className="text-lg font-semibold mb-3">Priority Weights</h3>
       
       <div className="mb-4 border-b">
-        <div className="flex">
+        <div className="flex justify-between">
+          <div className="flex">
+            <button
+              className={`py-2 px-4 font-medium ${
+                activeTab === 'clients'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('clients')}
+            >
+              Client Weights
+            </button>
+            <button
+              className={`py-2 px-4 font-medium ${
+                activeTab === 'tasks'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('tasks')}
+            >
+              Task Weights
+            </button>
+          </div>
           <button
-            className={`py-2 px-4 font-medium ${
-              activeTab === 'clients'
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('clients')}
+            onClick={activeTab === 'clients' ? handleResetClientWeights : handleResetTaskWeights}
+            className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
           >
-            Client Weights
-          </button>
-          <button
-            className={`py-2 px-4 font-medium ${
-              activeTab === 'tasks'
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('tasks')}
-          >
-            Task Weights
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Reset to 0.1
           </button>
         </div>
       </div>
