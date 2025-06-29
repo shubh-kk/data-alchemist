@@ -4,16 +4,23 @@ import { FileUploader, ParsedSheet } from '../components/FileUploader';
 import { DataGridView } from '../components/DataGridView';
 import { ErrorDisplay } from '../components/ErrorDisplay';
 import { validateData, ValidationError } from '../lib/validators';
+import { createFilterFromNL } from '../lib/nlFilter';
 
 export default function Home() {
   const [clients, setClients] = useState<ParsedSheet>([]);
   const [tasks, setTasks] = useState<ParsedSheet>([]);
   const [workers, setWorkers] = useState<ParsedSheet>([]);
+  const [filteredClients, setFilteredClients] = useState<ParsedSheet>([]);
+  const [filteredTasks, setFilteredTasks] = useState<ParsedSheet>([]);
+  const [filteredWorkers, setFilteredWorkers] = useState<ParsedSheet>([]);
   const [errors, setErrors] = useState<Record<'clients' | 'tasks' | 'workers', ValidationError[]>>({
     clients: [],
     tasks: [],
     workers: []
   });
+  const [nlFilter, setNlFilter] = useState<string>('');
+  const [activeEntity, setActiveEntity] = useState<'clients' | 'tasks' | 'workers'>('clients');
+  const [isFiltering, setIsFiltering] = useState<boolean>(false);
   
   // Refs to the grid sections for scrolling
   const clientsRef = useRef<HTMLDivElement>(null);
@@ -24,10 +31,62 @@ export default function Home() {
     setClients(clients);
     setTasks(tasks);
     setWorkers(workers);
+    setFilteredClients(clients);
+    setFilteredTasks(tasks);
+    setFilteredWorkers(workers);
     
     // Run validations
     const validationResults = validateData(clients, tasks, workers);
     setErrors(validationResults);
+  };
+  
+  const handleApplyFilter = async () => {
+    if (!nlFilter.trim()) {
+      // If filter is empty, reset to original data
+      setFilteredClients(clients);
+      setFilteredTasks(tasks);
+      setFilteredWorkers(workers);
+      console.log('⚠️ Empty filter, resetting to original data');
+      return;
+    }
+    
+    setIsFiltering(true);
+    try {
+      console.log(`🔎 Applying filter "${nlFilter}" to ${activeEntity}`);
+      
+      const filterFn = await createFilterFromNL(nlFilter, activeEntity);
+      
+      switch (activeEntity) {
+        case 'clients':
+          console.log(`📊 Filtering ${clients.length} clients`);
+          const filteredClientResults = clients.filter(filterFn);
+          console.log(`📊 Filter result: ${filteredClientResults.length} clients matched`);
+          setFilteredClients(filteredClientResults);
+          break;
+        case 'tasks':
+          console.log(`📊 Filtering ${tasks.length} tasks`);
+          const filteredTaskResults = tasks.filter(filterFn);
+          console.log(`📊 Filter result: ${filteredTaskResults.length} tasks matched`);
+          setFilteredTasks(filteredTaskResults);
+          break;
+        case 'workers':
+          console.log(`📊 Filtering ${workers.length} workers`);
+          const filteredWorkerResults = workers.filter(filterFn);
+          console.log(`📊 Filter result: ${filteredWorkerResults.length} workers matched`);
+          setFilteredWorkers(filteredWorkerResults);
+          break;
+      }
+    } catch (error) {
+      console.error('Filter application error:', error);
+      // In case of error, reset to the original data to avoid empty results
+      switch (activeEntity) {
+        case 'clients': setFilteredClients(clients); break;
+        case 'tasks': setFilteredTasks(tasks); break;
+        case 'workers': setFilteredWorkers(workers); break;
+      }
+    } finally {
+      setIsFiltering(false);
+    }
   };
   
   const handleErrorSelect = (entityType: 'clients' | 'tasks' | 'workers', row: number, column?: string) => {
@@ -120,28 +179,94 @@ export default function Home() {
         <ErrorDisplay errors={errors} onErrorSelect={handleErrorSelect} />
       </section>
       
+      <section className="mb-8 border rounded-lg p-4 bg-gray-50">
+        <h3 className="text-xl font-semibold mb-3">Natural Language Filter</h3>
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="flex-grow">
+            <div className="flex items-center gap-3 mb-3">
+              <label className="font-medium">Filter Entity:</label>
+              <div className="flex gap-2">
+                {(['clients', 'tasks', 'workers'] as const).map((entity) => (
+                  <button
+                    key={entity}
+                    className={`px-3 py-1 rounded-lg text-sm capitalize ${
+                      activeEntity === entity 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                    onClick={() => setActiveEntity(entity)}
+                  >
+                    {entity}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <input
+              type="text"
+              value={nlFilter}
+              onChange={(e) => setNlFilter(e.target.value)}
+              placeholder="Enter a natural language filter (e.g., 'priority >= 3')"
+              className="w-full p-2 border rounded-md"
+              onKeyDown={(e) => e.key === 'Enter' && handleApplyFilter()}
+            />
+          </div>
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
+            onClick={handleApplyFilter}
+            disabled={isFiltering}
+          >
+            {isFiltering ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </>
+            ) : (
+              'Apply NL Filter'
+            )}
+          </button>
+        </div>
+        {activeEntity === 'clients' && filteredClients.length !== clients.length && (
+          <div className="mt-3 text-sm text-blue-600">
+            Showing {filteredClients.length} of {clients.length} clients
+          </div>
+        )}
+        {activeEntity === 'tasks' && filteredTasks.length !== tasks.length && (
+          <div className="mt-3 text-sm text-blue-600">
+            Showing {filteredTasks.length} of {tasks.length} tasks
+          </div>
+        )}
+        {activeEntity === 'workers' && filteredWorkers.length !== workers.length && (
+          <div className="mt-3 text-sm text-blue-600">
+            Showing {filteredWorkers.length} of {workers.length} workers
+          </div>
+        )}
+      </section>
+      
       <section className="space-y-8">
         <div ref={clientsRef}>
           <DataGridView 
-            data={clients} 
+            data={filteredClients} 
             errors={errors.clients} 
-            title="Clients"
+            title={`Clients ${activeEntity === 'clients' && filteredClients.length !== clients.length ? `(Filtered: ${filteredClients.length}/${clients.length})` : ''}`}
           />
         </div>
         
         <div ref={tasksRef}>
           <DataGridView 
-            data={tasks} 
+            data={filteredTasks} 
             errors={errors.tasks} 
-            title="Tasks"
+            title={`Tasks ${activeEntity === 'tasks' && filteredTasks.length !== tasks.length ? `(Filtered: ${filteredTasks.length}/${tasks.length})` : ''}`}
           />
         </div>
         
         <div ref={workersRef}>
           <DataGridView 
-            data={workers} 
+            data={filteredWorkers} 
             errors={errors.workers} 
-            title="Workers"
+            title={`Workers ${activeEntity === 'workers' && filteredWorkers.length !== workers.length ? `(Filtered: ${filteredWorkers.length}/${workers.length})` : ''}`}
           />
         </div>
       </section>

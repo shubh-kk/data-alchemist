@@ -33,6 +33,7 @@ export function FileUploader({ onData }: FileUploaderProps) {
           if (name.includes('client')) sheets.clients = data;
           else if (name.includes('task')) sheets.tasks = data;
           else if (name.includes('worker')) sheets.workers = data;
+          console.log(`Parsed ${name}: ${data.length} rows`);
         } else if (name.endsWith('.xlsx')) {
           const buf = await file.arrayBuffer();
           const wb = new ExcelJS.Workbook();
@@ -73,6 +74,8 @@ export function FileUploader({ onData }: FileUploaderProps) {
       }
 
       setUploadStatus('Files processed successfully!');
+      console.log('🏷️ Parsed sheets:', sheets);
+      console.log('🏷️ onData clients', sheets.clients, 'tasks', sheets.tasks, 'workers', sheets.workers);
       onData(sheets.clients, sheets.tasks, sheets.workers);
       
       setTimeout(() => {
