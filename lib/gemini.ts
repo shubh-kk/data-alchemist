@@ -5,6 +5,15 @@ const ai = new GoogleGenAI({
   apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || ''
 });
 
+// const availableModels = await ai.models.list();
+// const modelNames = [];
+// for await (const model of availableModels) {
+//   modelNames.push(model.name);
+// }
+// console.log(`Available Gemini models: ${modelNames.join(', ')}`);
+
+
+
 // Environment flags
 enum Mode {
   MOCK = 'mock',

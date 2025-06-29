@@ -5,6 +5,7 @@ import { DataGridView } from '../components/DataGridView';
 import { ErrorDisplay } from '../components/ErrorDisplay';
 import { validateData, ValidationError } from '../lib/validators';
 import { createFilterFromNL } from '../lib/nlFilter';
+import { RuleBuilder } from '../components/RuleBuilder';
 
 export default function Home() {
   const [clients, setClients] = useState<ParsedSheet>([]);
@@ -21,6 +22,7 @@ export default function Home() {
   const [nlFilter, setNlFilter] = useState<string>('');
   const [activeEntity, setActiveEntity] = useState<'clients' | 'tasks' | 'workers'>('clients');
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'data' | 'rules'>('data');
   
   // Refs to the grid sections for scrolling
   const clientsRef = useRef<HTMLDivElement>(null);
@@ -107,6 +109,29 @@ export default function Home() {
         <p className="text-gray-600">Upload client, task, and worker data files for validation</p>
       </header>
       
+      <div className="mb-6 flex border-b">
+        <button
+          onClick={() => setActiveTab('data')}
+          className={`px-4 py-2 font-medium ${
+            activeTab === 'data' 
+              ? 'border-b-2 border-blue-600 text-blue-600' 
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Data View
+        </button>
+        <button
+          onClick={() => setActiveTab('rules')}
+          className={`px-4 py-2 font-medium ${
+            activeTab === 'rules' 
+              ? 'border-b-2 border-blue-600 text-blue-600' 
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Rule Builder
+        </button>
+      </div>
+      
       <section className="mb-8">
         <FileUploader onData={handleDataUploaded} />
         
@@ -175,101 +200,120 @@ export default function Home() {
         </div>
       </section>
       
-      <section className="mb-8">
-        <ErrorDisplay errors={errors} onErrorSelect={handleErrorSelect} />
-      </section>
-      
-      <section className="mb-8 border rounded-lg p-4 bg-gray-50">
-        <h3 className="text-xl font-semibold mb-3">Natural Language Filter</h3>
-        <div className="flex flex-col md:flex-row gap-3">
-          <div className="flex-grow">
-            <div className="flex items-center gap-3 mb-3">
-              <label className="font-medium">Filter Entity:</label>
-              <div className="flex gap-2">
-                {(['clients', 'tasks', 'workers'] as const).map((entity) => (
-                  <button
-                    key={entity}
-                    className={`px-3 py-1 rounded-lg text-sm capitalize ${
-                      activeEntity === entity 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                    onClick={() => setActiveEntity(entity)}
-                  >
-                    {entity}
-                  </button>
-                ))}
+      {activeTab === 'data' && (
+        <>
+          <section className="mb-8">
+            <ErrorDisplay errors={errors} onErrorSelect={handleErrorSelect} />
+          </section>
+          
+          <section className="mb-8 border rounded-lg p-4 bg-gray-50">
+            <h3 className="text-xl font-semibold mb-3">Natural Language Filter</h3>
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex-grow">
+                <div className="flex items-center gap-3 mb-3">
+                  <label className="font-medium">Filter Entity:</label>
+                  <div className="flex gap-2">
+                    {(['clients', 'tasks', 'workers'] as const).map((entity) => (
+                      <button
+                        key={entity}
+                        className={`px-3 py-1 rounded-lg text-sm capitalize ${
+                          activeEntity === entity 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                        onClick={() => setActiveEntity(entity)}
+                      >
+                        {entity}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={nlFilter}
+                  onChange={(e) => setNlFilter(e.target.value)}
+                  placeholder="Enter a natural language filter (e.g., 'priority >= 3')"
+                  className="w-full p-2 border rounded-md"
+                  onKeyDown={(e) => e.key === 'Enter' && handleApplyFilter()}
+                />
               </div>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
+                onClick={handleApplyFilter}
+                disabled={isFiltering}
+              >
+                {isFiltering ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : (
+                  'Apply NL Filter'
+                )}
+              </button>
             </div>
-            <input
-              type="text"
-              value={nlFilter}
-              onChange={(e) => setNlFilter(e.target.value)}
-              placeholder="Enter a natural language filter (e.g., 'priority >= 3')"
-              className="w-full p-2 border rounded-md"
-              onKeyDown={(e) => e.key === 'Enter' && handleApplyFilter()}
-            />
-          </div>
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
-            onClick={handleApplyFilter}
-            disabled={isFiltering}
-          >
-            {isFiltering ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Processing...
-              </>
-            ) : (
-              'Apply NL Filter'
+            {activeEntity === 'clients' && filteredClients.length !== clients.length && (
+              <div className="mt-3 text-sm text-blue-600">
+                Showing {filteredClients.length} of {clients.length} clients
+              </div>
             )}
-          </button>
-        </div>
-        {activeEntity === 'clients' && filteredClients.length !== clients.length && (
-          <div className="mt-3 text-sm text-blue-600">
-            Showing {filteredClients.length} of {clients.length} clients
-          </div>
-        )}
-        {activeEntity === 'tasks' && filteredTasks.length !== tasks.length && (
-          <div className="mt-3 text-sm text-blue-600">
-            Showing {filteredTasks.length} of {tasks.length} tasks
-          </div>
-        )}
-        {activeEntity === 'workers' && filteredWorkers.length !== workers.length && (
-          <div className="mt-3 text-sm text-blue-600">
-            Showing {filteredWorkers.length} of {workers.length} workers
-          </div>
-        )}
-      </section>
+            {activeEntity === 'tasks' && filteredTasks.length !== tasks.length && (
+              <div className="mt-3 text-sm text-blue-600">
+                Showing {filteredTasks.length} of {tasks.length} tasks
+              </div>
+            )}
+            {activeEntity === 'workers' && filteredWorkers.length !== workers.length && (
+              <div className="mt-3 text-sm text-blue-600">
+                Showing {filteredWorkers.length} of {workers.length} workers
+              </div>
+            )}
+          </section>
+          
+          <section className="space-y-8">
+            <div ref={clientsRef}>
+              <DataGridView 
+                data={filteredClients} 
+                errors={errors.clients} 
+                title={`Clients ${activeEntity === 'clients' && filteredClients.length !== clients.length ? `(Filtered: ${filteredClients.length}/${clients.length})` : ''}`}
+              />
+            </div>
+            
+            <div ref={tasksRef}>
+              <DataGridView 
+                data={filteredTasks} 
+                errors={errors.tasks} 
+                title={`Tasks ${activeEntity === 'tasks' && filteredTasks.length !== tasks.length ? `(Filtered: ${filteredTasks.length}/${tasks.length})` : ''}`}
+              />
+            </div>
+            
+            <div ref={workersRef}>
+              <DataGridView 
+                data={filteredWorkers} 
+                errors={errors.workers} 
+                title={`Workers ${activeEntity === 'workers' && filteredWorkers.length !== workers.length ? `(Filtered: ${filteredWorkers.length}/${workers.length})` : ''}`}
+              />
+            </div>
+          </section>
+        </>
+      )}
       
-      <section className="space-y-8">
-        <div ref={clientsRef}>
-          <DataGridView 
-            data={filteredClients} 
-            errors={errors.clients} 
-            title={`Clients ${activeEntity === 'clients' && filteredClients.length !== clients.length ? `(Filtered: ${filteredClients.length}/${clients.length})` : ''}`}
+      {activeTab === 'rules' && (
+        <section>
+          <div className="mb-4 bg-blue-50 border border-blue-200 rounded-md p-4 text-blue-800">
+            <p>
+              <span className="font-semibold">Rule Builder:</span> Define business rules that govern how clients, tasks, and workers interact in allocation processes.
+            </p>
+          </div>
+          <RuleBuilder 
+            clients={clients} 
+            tasks={tasks} 
+            workers={workers} 
           />
-        </div>
-        
-        <div ref={tasksRef}>
-          <DataGridView 
-            data={filteredTasks} 
-            errors={errors.tasks} 
-            title={`Tasks ${activeEntity === 'tasks' && filteredTasks.length !== tasks.length ? `(Filtered: ${filteredTasks.length}/${tasks.length})` : ''}`}
-          />
-        </div>
-        
-        <div ref={workersRef}>
-          <DataGridView 
-            data={filteredWorkers} 
-            errors={errors.workers} 
-            title={`Workers ${activeEntity === 'workers' && filteredWorkers.length !== workers.length ? `(Filtered: ${filteredWorkers.length}/${workers.length})` : ''}`}
-          />
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }
