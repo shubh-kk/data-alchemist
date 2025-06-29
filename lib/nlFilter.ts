@@ -1,7 +1,5 @@
 'use client';
 
-import { generateContent } from "./gemini";
-
 /**
  * Creates a JavaScript filter function from a natural language query
  * 
@@ -14,80 +12,128 @@ export async function createFilterFromNL(
   entity: 'clients' | 'tasks' | 'workers'
 ): Promise<(row: any) => boolean> {
   try {
-    // Quick path for common simple queries to avoid API call
-    if (nlQuery.toLowerCase().includes('priority') && nlQuery.includes('>=')) {
-      const match = nlQuery.match(/priority\s*>=\s*(\d+)/i);
-      if (match && match[1]) {
-        const priorityValue = parseInt(match[1]);
-        return (row) => row.PriorityLevel >= priorityValue;
+    // Convert query to lowercase for case-insensitive matching
+    const query = nlQuery.toLowerCase().trim();
+    
+    // Handle priority filters
+    if (query.includes('priority')) {
+      // Handle greater than or equal
+      if (query.includes('>=') || query.includes('greater than or equal') || query.includes('at least')) {
+        const match = query.match(/(\d+)/);
+        if (match && match[1]) {
+          const value = parseInt(match[1]);
+          return (row) => row.PriorityLevel >= value;
+        }
+      }
+      // Handle less than or equal
+      else if (query.includes('<=') || query.includes('less than or equal') || query.includes('at most')) {
+        const match = query.match(/(\d+)/);
+        if (match && match[1]) {
+          const value = parseInt(match[1]);
+          return (row) => row.PriorityLevel <= value;
+        }
+      }
+      // Handle greater than
+      else if (query.includes('>') || query.includes('greater than') || query.includes('more than')) {
+        const match = query.match(/(\d+)/);
+        if (match && match[1]) {
+          const value = parseInt(match[1]);
+          return (row) => row.PriorityLevel > value;
+        }
+      }
+      // Handle less than
+      else if (query.includes('<') || query.includes('less than')) {
+        const match = query.match(/(\d+)/);
+        if (match && match[1]) {
+          const value = parseInt(match[1]);
+          return (row) => row.PriorityLevel < value;
+        }
+      }
+      // Handle equal to
+      else if (query.includes('=') || query.includes('equal') || query.includes('is')) {
+        const match = query.match(/(\d+)/);
+        if (match && match[1]) {
+          const value = parseInt(match[1]);
+          return (row) => row.PriorityLevel === value;
+        }
+      }
+      // Handle high priority as a concept
+      else if (query.includes('high')) {
+        return (row) => row.PriorityLevel >= 4;
+      }
+      // Handle medium priority as a concept
+      else if (query.includes('medium')) {
+        return (row) => row.PriorityLevel >= 2 && row.PriorityLevel <= 3;
+      }
+      // Handle low priority as a concept
+      else if (query.includes('low')) {
+        return (row) => row.PriorityLevel <= 1;
       }
     }
     
-    // Proceed with API call for more complex queries
-    const prompt = `
-    Create a JavaScript filter function (as a string that can be passed to 'new Function()') 
-    that filters ${entity} based on this criteria: "${nlQuery}".
-    
-    The filter should take a single parameter "row" representing a single data row.
-    
-    For example:
-    Query: "priority >= 3"
-    Response: "return row.PriorityLevel >= 3"
-    
-    Query: "tasks with high duration"
-    Response: "return row.Duration >= 4"
-    
-    Only return the raw JavaScript code, with no explanation, comments, or other text.
-    `;
-    
-    // Call the Gemini API
-    const response = await generateContent({ 
-      contents: [prompt]
-    } as any);
-    
-    const filterCode = response.text.trim();
-    
-    // Safety validation - ensure we don't execute harmful code
-    // Check for typical allowed terms
-    if (!filterCode.match(/^(return|if|switch|for|while|\(|\)|row|\.|>=|<=|>|<|===|==|!=|!==|\+|-|\*|\/|\?|\:|\|\||&&|true|false|null|undefined|typeof|\[|\]|\"|\')/) ||
-        filterCode.includes('fetch') || filterCode.includes('eval') || filterCode.includes('window') || 
-        filterCode.includes('document') || filterCode.includes('localStorage')) {
-      throw new Error('Potentially unsafe filter code generated');
+    // Handle duration filters (for tasks)
+    if (query.includes('duration') && entity === 'tasks') {
+      // Handle greater than or equal
+      if (query.includes('>=') || query.includes('greater than or equal') || query.includes('at least')) {
+        const match = query.match(/(\d+)/);
+        if (match && match[1]) {
+          const value = parseInt(match[1]);
+          return (row) => row.Duration >= value;
+        }
+      }
+      // Handle less than or equal
+      else if (query.includes('<=') || query.includes('less than or equal') || query.includes('at most')) {
+        const match = query.match(/(\d+)/);
+        if (match && match[1]) {
+          const value = parseInt(match[1]);
+          return (row) => row.Duration <= value;
+        }
+      }
+      // Handle greater than
+      else if (query.includes('>') || query.includes('greater than') || query.includes('more than')) {
+        const match = query.match(/(\d+)/);
+        if (match && match[1]) {
+          const value = parseInt(match[1]);
+          return (row) => row.Duration > value;
+        }
+      }
+      // Handle less than
+      else if (query.includes('<') || query.includes('less than')) {
+        const match = query.match(/(\d+)/);
+        if (match && match[1]) {
+          const value = parseInt(match[1]);
+          return (row) => row.Duration < value;
+        }
+      }
+      // Handle long duration as a concept
+      else if (query.includes('long')) {
+        return (row) => row.Duration >= 4;
+      }
+      // Handle short duration as a concept
+      else if (query.includes('short')) {
+        return (row) => row.Duration <= 2;
+      }
     }
     
-    // Create a function from the code
-    try {
-      // Make sure we have a proper "return" statement
-      let finalCode = filterCode;
-      if (!filterCode.trim().startsWith('return')) {
-        finalCode = `return ${filterCode.trim()}`;
-      }
+    // Handle name-based searches
+    if (query.includes('name') || query.includes('called')) {
+      const nameTerms = query.replace(/name|called|contains|is|with|having/g, '').trim().split(' ').filter(t => t.length > 2);
       
-      // Explicitly define the function return type
-      const filterFn = new Function('row', finalCode) as (row: any) => boolean;
-      
-      // Validate the function with a test object to ensure it doesn't throw
-      try {
-        const testRow = { 
-          PriorityLevel: 3, 
-          Duration: 2,
-          ClientName: 'Test',
-          WorkerName: 'Test',
-          TaskName: 'Test'
+      if (nameTerms.length > 0) {
+        return (row) => {
+          const nameField = entity === 'clients' ? 'ClientName' :
+                           entity === 'tasks' ? 'TaskName' : 'WorkerName';
+          
+          if (!row[nameField]) return false;
+          
+          const rowName = row[nameField].toLowerCase();
+          return nameTerms.some(term => rowName.includes(term));
         };
-        const result = filterFn(testRow);
-      } catch (testError) {
-        console.error('Filter function threw on test data:', testError);
-        // The filter doesn't work properly, return a function that passes all rows
-        return () => true;
       }
-      
-      return filterFn;
-    } catch (e) {
-      console.error('Failed to create filter function:', e);
-      // Return a function that passes all rows
-      return () => true;
     }
+
+    // Default to returning all rows if no pattern matched
+    return () => true;
   } catch (error) {
     console.error('Error creating filter:', error);
     // Return a function that passes all rows in case of error
