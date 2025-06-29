@@ -12,8 +12,9 @@ export function SampleFilesSection() {
       
       <h3 className="text-sm font-semibold text-blue-800 mb-2">Raw Sample Files</h3>
       <div className="flex flex-wrap gap-2">
-        <SampleFileLink filename="sample-v1.csv" variant="green" />
-        <SampleFileLink filename="sample-v2.csv" variant="green" />
+        <SampleFileLink filename="sample data v1.xlsx" variant="green" />
+        <SampleFileLink filename="sample data v2.xlsx" variant="green" />
+        <SampleFileLink filename="[V1] Data Alchemist - Sample Data.xlsx" variant="green" />
       </div>
       
       <p className="text-xs text-blue-700 mt-2">

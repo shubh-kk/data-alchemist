@@ -1,38 +1,25 @@
 import { ParsedSheet } from "../components/FileUploader";
-
-// Type for validation errors
 export interface ValidationError {
   row: number;
   column?: string;
   message: string;
 }
-
-// Helper to check if a field exists in an object
 const fieldExists = (obj: Record<string, any>, field: string): boolean => {
   return field in obj && obj[field] !== null && obj[field] !== undefined && obj[field] !== "";
 };
-
-// Helper to check if a value is a valid number
 const isValidNumber = (value: any): boolean => {
   if (value === null || value === undefined || value === "") return false;
   return !isNaN(Number(value));
 };
-
-// Helper to check if a value is an integer
 const isInteger = (value: any): boolean => {
   if (!isValidNumber(value)) return false;
   const num = Number(value);
   return Number.isInteger(num);
 };
-
-// Helper to parse a comma or semicolon separated list
 const parseList = (value: string): string[] => {
   if (!value) return [];
-  // Handle both comma and semicolon separators
   return value.split(/[,;]/).map(item => item.trim()).filter(Boolean);
 };
-
-// 1. Required column check
 export const validateRequiredColumns = (sheet: ParsedSheet, entityType: 'clients' | 'tasks' | 'workers'): ValidationError[] => {
   const errors: ValidationError[] = [];
   
@@ -62,8 +49,6 @@ export const validateRequiredColumns = (sheet: ParsedSheet, entityType: 'clients
   
   return errors;
 };
-
-// 2. Unique ID enforcement
 export const validateUniqueIds = (sheet: ParsedSheet, entityType: 'clients' | 'tasks' | 'workers'): ValidationError[] => {
   const errors: ValidationError[] = [];
   const idColumn = {
@@ -91,8 +76,6 @@ export const validateUniqueIds = (sheet: ParsedSheet, entityType: 'clients' | 't
   
   return errors;
 };
-
-// 3. Non-empty mandatory fields
 export const validateMandatoryFields = (sheet: ParsedSheet, entityType: 'clients' | 'tasks' | 'workers'): ValidationError[] => {
   const errors: ValidationError[] = [];
   
@@ -116,8 +99,6 @@ export const validateMandatoryFields = (sheet: ParsedSheet, entityType: 'clients
   
   return errors;
 };
-
-// 4. Numeric range validation
 export const validateNumericRanges = (sheet: ParsedSheet, entityType: 'clients' | 'tasks' | 'workers'): ValidationError[] => {
   const errors: ValidationError[] = [];
   
@@ -149,8 +130,6 @@ export const validateNumericRanges = (sheet: ParsedSheet, entityType: 'clients' 
   
   return errors;
 };
-
-// 5. Non-negative integers
 export const validateNonNegativeIntegers = (sheet: ParsedSheet, entityType: 'clients' | 'tasks' | 'workers'): ValidationError[] => {
   const errors: ValidationError[] = [];
   
@@ -184,8 +163,6 @@ export const validateNonNegativeIntegers = (sheet: ParsedSheet, entityType: 'cli
   
   return errors;
 };
-
-// 6. JSON syntax check
 export const validateJsonSyntax = (sheet: ParsedSheet, entityType: 'clients' | 'tasks' | 'workers'): ValidationError[] => {
   const errors: ValidationError[] = [];
   
@@ -207,8 +184,6 @@ export const validateJsonSyntax = (sheet: ParsedSheet, entityType: 'clients' | '
   
   return errors;
 };
-
-// 7. Cross-reference integrity
 export const validateCrossReferences = (clients: ParsedSheet, tasks: ParsedSheet): ValidationError[] => {
   const errors: ValidationError[] = [];
   
@@ -238,8 +213,6 @@ export const validateCrossReferences = (clients: ParsedSheet, tasks: ParsedSheet
   
   return errors;
 };
-
-// 8. MaxConcurrent ≥ 1
 export const validateMaxConcurrent = (sheet: ParsedSheet, entityType: 'clients' | 'tasks' | 'workers'): ValidationError[] => {
   const errors: ValidationError[] = [];
   
@@ -266,8 +239,6 @@ export const validateMaxConcurrent = (sheet: ParsedSheet, entityType: 'clients' 
   
   return errors;
 };
-
-// Main validation function that runs all validations
 export const validateData = (
   clients: ParsedSheet, 
   tasks: ParsedSheet, 

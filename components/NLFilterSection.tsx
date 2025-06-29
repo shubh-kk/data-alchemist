@@ -26,7 +26,6 @@ export function NLFilterSection({
   
   const handleApplyFilter = async () => {
     if (!nlFilter.trim()) {
-      // If filter is empty, reset to original data
       onFilterResults(activeEntity, clients, tasks, workers);
       return;
     }
@@ -53,7 +52,6 @@ export function NLFilterSection({
       
       onFilterResults(activeEntity, filteredClients, filteredTasks, filteredWorkers);
     } catch (error) {
-      // In case of error, reset to the original data
       onFilterResults(activeEntity, clients, tasks, workers);
     } finally {
       setIsFiltering(false);

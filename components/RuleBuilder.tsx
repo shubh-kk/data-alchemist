@@ -19,27 +19,21 @@ export function RuleBuilder({ clients, tasks, workers }: RuleBuilderProps) {
   const [rules, setRules] = useState<BusinessRules>(createEmptyRules());
   const [validation, setValidation] = useState<ValidationResult>({ isValid: true, errors: [] });
 
-  // Validate rules when they or data changes
   useEffect(() => {
     const result = validateRules(rules, clients, tasks, workers);
     setValidation(result);
   }, [rules, clients, tasks, workers]);
-
-  // Download rules as JSON
   const handleDownloadRules = () => {
-    // Create a blob of the rules JSON
     const jsonString = JSON.stringify(rules, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     
-    // Create a temporary link and trigger the download
     const link = document.createElement('a');
     link.href = url;
     link.download = 'rules.json';
     document.body.appendChild(link);
     link.click();
     
-    // Clean up
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };

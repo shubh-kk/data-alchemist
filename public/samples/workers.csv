@@ -1,0 +1,6 @@
+WorkerID,WorkerName,Skills,AvailableSlots,MaxLoadPerPhase,WorkerGroup,QualificationLevel
+W1,Alice,"UX,UI,React",2,2,DesignTeam,4
+W2,Bob,"Node.js,REST,Python",3,1,BackendTeam,5
+W3,Carol,"Python,Pandas,Selenium",2,2,DataTeam,3
+W4,Dave,"Selenium,Java",1,1,QATeam,4
+W5,Eve,"AWS,Docker,CI/CD",2,2,DevOpsTeam,5

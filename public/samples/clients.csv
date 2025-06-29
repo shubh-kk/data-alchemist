@@ -1,0 +1,6 @@
+ClientID,ClientName,PriorityLevel,RequestedTaskIDs,AttributesJSON
+C1,Acme Corp,3,"T1;T3","{""industry"":""Manufacturing"",""region"":""APAC""}"
+C2,Beta LLC,1,T2,"{""industry"":""Finance"",""region"":""EMEA""}"
+C3,Gamma Inc,5,"T1;T2;T4","{""industry"":""Healthcare"",""region"":""NA""}"
+C4,Delta Co,2,,"{""industry"":""Retail"",""region"":""LATAM""}"
+C5,Epsilon GmbH,4,"T3;T5","{""industry"":""Tech"",""region"":""APAC""}"

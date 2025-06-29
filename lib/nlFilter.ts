@@ -1,12 +1,4 @@
 'use client';
-
-/**
- * Creates a JavaScript filter function from a natural language query
- * 
- * @param nlQuery The natural language query (e.g. "priority >= 3")
- * @param entity The entity type being filtered ('clients', 'tasks', 'workers')
- * @returns A function that can be used to filter data rows
- */
 export async function createFilterFromNL(
   nlQuery: string, 
   entity: 'clients' | 'tasks' | 'workers'
@@ -135,8 +127,6 @@ export async function createFilterFromNL(
     // Default to returning all rows if no pattern matched
     return () => true;
   } catch (error) {
-    console.error('Error creating filter:', error);
-    // Return a function that passes all rows in case of error
     return () => true;
   }
 }

@@ -80,7 +80,6 @@ export function FileUploader({ onData }: FileUploaderProps) {
       }, 2000);
     } catch (error) {
       setUploadStatus('Error processing files. Please check file format.');
-      console.error('File processing error:', error);
     } finally {
       setUploading(false);
     }

@@ -6,7 +6,6 @@ import { ParsedSheet } from './FileUploader';
 import { ValidationError } from '../lib/validators';
 import { useState } from 'react';
 
-// Custom styles for the DataGrid
 const customStyles = {
   cell: {
     whiteSpace: 'nowrap',
@@ -26,7 +25,7 @@ export function DataGridView({ data, errors, title }: DataGridViewProps) {
     content: '',
     isOpen: false
   });
-  // Create a map of rows with errors for quick lookup
+
   const errorMap = useMemo(() => {
     const map = new Map<number, Map<string, string[]>>();
     
@@ -48,10 +47,7 @@ export function DataGridView({ data, errors, title }: DataGridViewProps) {
     return map;
   }, [errors]);
 
-  // Track column widths for resizable columns
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
-
-  // Generate columns from the first row or default set
   const columns = useMemo<Column<any>[]>(() => {
     if (data.length === 0) return [];
     
@@ -71,17 +67,14 @@ export function DataGridView({ data, errors, title }: DataGridViewProps) {
         const hasError = errorMap.has(rowIndex) && errorMap.get(rowIndex)!.has(key);
         let cellContent = row[key] || '';
         
-        // Format certain types of data for better display
         if (key === 'AttributesJSON' && cellContent) {
           try {
             const parsedJson = JSON.parse(cellContent);
             cellContent = JSON.stringify(parsedJson, null, 2);
           } catch {
-            // If parsing fails, display as-is
+            
           }
         }
-        
-        // Determine if content should be truncated in view
         const isTruncated = typeof cellContent === 'string' && cellContent.length > 100;
         const displayContent = isTruncated 
           ? `${cellContent.substring(0, 100)}...` 
