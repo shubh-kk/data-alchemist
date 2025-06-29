@@ -14,7 +14,6 @@ export function SampleFilesSection() {
       <div className="flex flex-wrap gap-2">
         <SampleFileLink filename="sample data v1.xlsx" variant="green" />
         <SampleFileLink filename="sample data v2.xlsx" variant="green" />
-        <SampleFileLink filename="[V1] Data Alchemist - Sample Data.xlsx" variant="green" />
       </div>
       
       <p className="text-xs text-blue-700 mt-2">
