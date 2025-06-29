@@ -1,70 +1,88 @@
-# Data Alchemist - Milestone 1
+# Data Alchemist
 
-Data ingestion and validation tool for client, task, and worker data.
+A simple Next.js app that helps you upload, view, validate, and build rules around your CSV/XLSX data for clients, tasks, and workers.
 
-## Setup Instructions
+---
 
-1. Clone the repository
-2. Install dependencies:
+## 📝 Overview
+
+- **Upload** CSV or Excel files for three entities: Clients, Tasks, and Workers  
+- **View** your data in an interactive, editable grid  
+- **Validate** data with 8 built-in checks (missing columns, duplicate IDs, bad JSON, out-of-range numbers, etc.)  
+- **Build rules** (co-run groups, phase restrictions, load limits) with plain React forms  
+- **Preview & export** your final rules as a `rules.json` file  
+
+*No AI or external “smart” features—everything runs locally in the browser.*
+
+---
+
+## 🚀 Tech Stack
+
+- **Next.js 13** (App Router + React 18 + TypeScript)  
+- **Tailwind CSS v4** for styling and dark/light themes  
+- **papaparse** for parsing CSV files  
+- **exceljs** for reading `.xlsx` spreadsheets  
+- **react-data-grid** for the data table (highlight errors, edit cells)  
+
+---
+
+## 📦 Installation
+
+1. **Clone the repo**  
    ```bash
-   npm install
+   git clone https://github.com/shubh-kk/data-alchemist.git
+   cd data-alchemist
    ```
-3. Run the development server:
+2. **Install dependencies**
+
    ```bash
-   npm run dev
+      npm install
    ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+3. **Run the dev server**
+   ```bash
+      npm run dev
+   ```
+4. **Open your browser at** [http://localhost:3000](http://localhost:3000)
 
-## Features
+---
 
-- **File Upload**: Upload CSV or XLSX files for clients, tasks, and workers
-- **Data Visualization**: View data in interactive grids
-- **Validation**: Automatic validation with error highlighting
-- **Error Display**: Clear listing of validation errors with location information
+## How to Use
+1. **Upload files**
 
-## How to Test with Sample Files
+   - Click the file picker and select your clients.csv, tasks.csv, and workers.csv (or .xlsx).
 
-Sample files are provided in the UI for testing:
+   - Filenames must include “client”, “task”, or “worker” so the app knows which is which.
 
-1. Click on the download links for the sample CSV files (clients.csv, tasks.csv, workers.csv)
-2. Upload the downloaded files using the file uploader
-3. Review the validation results and data grids
+2. **See your data**
+   - The app parses your files and shows each sheet in its own grid.
+   - If any core validation fails, rows/cells turn red and an error list appears above the table.
 
-### Expected Validation Issues in Sample Files
+3. **Core Validations**
 
-#### Clients Sample
-- Duplicate ClientID (C001)
-- Missing PriorityLevel (C004)
-- Invalid PriorityLevel range (C005)
-- Invalid JSON syntax (C004)
-- Reference to non-existent TaskID (C005 references T999)
+   - Required columns present
+   - IDs are unique
+   - Mandatory fields not empty
+   - Numbers in range (e.g. priority 1–5, duration ≥ 1)
+   - Non-negative integers (e.g. slots ≥ 0)
+   - Valid JSON (for attributes field)
+   - Cross-reference (requested TaskIDs must exist)
+   - MaxConcurrent ≥ 1
 
-#### Tasks Sample
-- Missing TaskName (T005)
-- Invalid MaxConcurrent value (T004, T006)
 
-#### Workers Sample
-- Missing WorkerName (W005)
-- Duplicate WorkerID (W001)
-- Negative values for AvailableSlots and MaxLoadPerPhase (W006)
+4. **Build Rules**
 
-## Core Validations
+   - **Co-Run Groups**: Define named groups of tasks that must run together
+   - **Phase Restrictions**: Lock a task to specific phase numbers
+   - **Load Limits**: Set a max load per phase for each worker
 
-The application implements all eight core validations:
 
-1. **Required-column check**: Ensures each sheet contains its full set of headers
-2. **Unique-ID enforcement**: No duplicate ClientID/TaskID/WorkerID within sheets
-3. **Non-empty mandatory fields**: ClientName, TaskName, WorkerName must not be blank
-4. **Numeric-range validation**: PriorityLevel ∈ [1, 5]; Duration ≥ 1
-5. **Non-negative integers**: AvailableSlots, MaxLoadPerPhase ≥ 0
-6. **JSON-syntax check**: AttributesJSON must parse as valid JSON
-7. **Cross-reference integrity**: Every ID in RequestedTaskIDs must exist in tasks
-8. **MaxConcurrent ≥ 1**: Ensures every MaxConcurrent is at least 1
+5. **Preview & Export**
 
-## Technical Implementation
+   - The app generates a `rules.json` file based on your data and rules
+   - You can download this file to use in your backend or other systems
 
-- **Framework**: Next.js with App Router
-- **UI Components**: React components with Tailwind CSS
-- **File Parsing**: PapaParse for CSV, ExcelJS for XLSX
-- **Data Grid**: react-data-grid for tabular display
-- **Validation**: Custom validation engine with error highlighting
+   ---
+
+
+
+
