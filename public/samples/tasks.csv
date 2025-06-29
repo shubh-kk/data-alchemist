@@ -1,0 +1,11 @@
+TaskID,TaskName,Category,Duration,RequiredSkills,PreferredPhases,MaxConcurrent
+1,Data Entry,Administrative,2,"Typing,Attention to Detail","1,2",2
+2,Data Cleaning,Data Processing,3.5,"Excel,Python,Data Analysis","1,3",2
+3,Transcription,Audio Processing,2,"Typing,Audio Processing,English","2,3",1
+4,Data Analysis,Analytics,4,"Statistics,Python,Data Visualization","1,2",3
+5,Data Entry,Administrative,4,"Typing,Attention to Detail","1,2",2
+6,Web Research,Research,3,"Internet Research,Data Collection","1,3",1
+7,Data Entry,Administrative,4,"Typing,Attention to Detail","1,2",2
+8,Data Cleaning,Data Processing,3,"Excel,Python,Data Analysis","2,3",2
+9,Data Analysis,Analytics,4,"Statistics,Python,Data Visualization","1,2",3
+10,Transcription,Audio Processing,1,"Typing,Audio Processing,English","2,3",1
