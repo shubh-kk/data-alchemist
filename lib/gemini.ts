@@ -5,15 +5,6 @@ const ai = new GoogleGenAI({
   apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || ''
 });
 
-// const availableModels = await ai.models.list();
-// const modelNames = [];
-// for await (const model of availableModels) {
-//   modelNames.push(model.name);
-// }
-// console.log(`Available Gemini models: ${modelNames.join(', ')}`);
-
-
-
 // Environment flags
 enum Mode {
   MOCK = 'mock',
@@ -26,8 +17,6 @@ const MODE = (process.env.NEXT_PUBLIC_GEMINI_MODE as Mode) || (hasApiKey ? Mode.
 // Use a more reliable model name that works with the API
 const GEMINI_MODEL = 'gemini-1.0-pro';
 
-console.log(`🔧 Gemini configured with mode: ${MODE}, model: ${GEMINI_MODEL}, API key ${hasApiKey ? 'present' : 'missing'}`)
-
 /**
  * Wrapper to generate content via Gemini API or mock in development.
  * Prevents unintended calls when MODE is not set to 'real'.
@@ -38,8 +27,6 @@ export async function generateContent(
   const model = options.model || GEMINI_MODEL;
 
   if (MODE !== Mode.REAL) {
-    console.log(`⚠️ [Gemini MOCK] Skipping API call; would use model: ${model}`);
-    
     // Extract the query from the contents if available
     let mockResponse = 'return row.PriorityLevel >= 1';
     
@@ -55,7 +42,6 @@ export async function generateContent(
       }
     }
     
-    console.log(`🔍 [Mock] Generated filter: ${mockResponse}`);
     return { text: mockResponse };
   }
 
@@ -69,14 +55,10 @@ export async function generateContent(
       }
     ];
     
-    console.log(`🔄 Calling Gemini API with model: ${model}`);
-    
     const response = await ai.models.generateContent({
       model,
       contents: formattedContents
     });
-    
-    console.log('✅ Gemini API call successful');
     return { text: response.text ?? '' };
   } catch (error) {
     console.error('❌ Gemini API error:', error);

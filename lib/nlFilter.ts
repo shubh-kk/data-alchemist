@@ -19,7 +19,6 @@ export async function createFilterFromNL(
       const match = nlQuery.match(/priority\s*>=\s*(\d+)/i);
       if (match && match[1]) {
         const priorityValue = parseInt(match[1]);
-        console.log(`🔍 Direct match for priority >= ${priorityValue}`);
         return (row) => row.PriorityLevel >= priorityValue;
       }
     }
@@ -41,15 +40,12 @@ export async function createFilterFromNL(
     Only return the raw JavaScript code, with no explanation, comments, or other text.
     `;
     
-    console.log(`🔍 Sending prompt to Gemini API for query: ${nlQuery}`);
-    
     // Call the Gemini API
     const response = await generateContent({ 
       contents: [prompt]
     } as any);
     
     const filterCode = response.text.trim();
-    console.log('🔍 Gemini returned:', filterCode);
     
     // Safety validation - ensure we don't execute harmful code
     // Check for typical allowed terms
@@ -67,8 +63,6 @@ export async function createFilterFromNL(
         finalCode = `return ${filterCode.trim()}`;
       }
       
-      console.log('🧪 Creating filter function with code:', finalCode);
-      
       // Explicitly define the function return type
       const filterFn = new Function('row', finalCode) as (row: any) => boolean;
       
@@ -82,7 +76,6 @@ export async function createFilterFromNL(
           TaskName: 'Test'
         };
         const result = filterFn(testRow);
-        console.log(`🧪 Test filter result: ${result}`);
       } catch (testError) {
         console.error('Filter function threw on test data:', testError);
         // The filter doesn't work properly, return a function that passes all rows
