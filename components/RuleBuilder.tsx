@@ -99,7 +99,7 @@ export function RuleBuilder({ clients, tasks, workers }: RuleBuilderProps) {
         <button
           onClick={handleDownloadRules}
           disabled={validation.errors.length > 0}
-          className={`px-6 py-2 rounded-md flex items-center gap-2 ${
+          className={`px-6 py-2 rounded-md flex items-center gap-2 cursor-pointer ${
             validation.errors.length > 0
               ? 'bg-gray-300 cursor-not-allowed text-gray-500'
               : 'bg-blue-600 hover:bg-blue-700 text-white'

@@ -89,7 +89,7 @@ export function NLFilterSection({
               {(['clients', 'tasks', 'workers'] as const).map((entity) => (
                 <button
                   key={entity}
-                  className={`px-3 py-1 rounded-lg text-sm capitalize ${
+                  className={`px-3 py-1 rounded-lg text-sm capitalize cursor-pointer ${
                     activeEntity === entity 
                       ? 'bg-blue-600 text-white' 
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -111,7 +111,7 @@ export function NLFilterSection({
           />
         </div>
         <button
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 cursor-pointer"
           onClick={handleApplyFilter}
           disabled={isFiltering}
         >
